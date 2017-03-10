@@ -62,23 +62,50 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+X = [ones(m, 1), X];
+y = ([1:num_labels]==y);
 
+% Part 1 Forward
+% COST FUNCTION
+A1 = X;
+A2 = sigmoid(A1  *  Theta1' );
+A2 = [ones(size(A2,1), 1),A2];
+A3 = sigmoid(A2 *  Theta2' );
+h=A3;
+J = 1/m * sum(sum( ((-y).* log(h)-(1-y).*log(1-h) )) );
 
+% Part 2 Backpropagation
+% GRADIENTS
 
+delta1 = zeros(size(Theta1));
+delta2 = zeros(size(Theta2));
 
+for i = 1 : m
+	a1 = X(i,:)';
+	z2 = Theta1 * a1;
+	a2 = sigmoid( z2);
+	a2 = [ 1 ; a2 ]; % add a2_0
+	z3 = Theta2 * a2;
+	a3 = sigmoid( z3 );
+	d3 = a3 - y(i,:)';
+	z2 = [1;z2]; % add z2_0
+	d2 = (Theta2'*d3) .* sigmoidGradient(z2);
+	delta1 = delta1 + d2(2:end,:) * a1';
+	delta2 = delta2 + d3 * a2';
+end
 
+tempTheta1 = Theta1;
+tempTheta2 = Theta2;
+tempTheta1(:,1) = 0;
+tempTheta2(:,1) = 0;
 
+Theta1_grad = 1/m*delta1;
+Theta2_grad = 1/m*delta2;
 
-
-
-
-
-
-
-
-
-
-
+% Part 3 regularization
+J = J + lambda/(2*m) *  ( tempTheta1(:)'*tempTheta1(:) +  tempTheta2(:)'*tempTheta2(:) );
+Theta1_grad = Theta1_grad + 1/m*(lambda* tempTheta1);
+Theta2_grad = Theta2_grad + 1/m*(lambda* tempTheta2);
 
 % -------------------------------------------------------------
 
@@ -86,6 +113,7 @@ Theta2_grad = zeros(size(Theta2));
 
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
+
 
 
 end
